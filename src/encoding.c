@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #define LINESIZE 3000
-#define TAB_COUNT 117
 #define true 1
 #define false 0
 
-int count_tabs(const char* string, const unsigned int len) {
+uint16_t count_tabs(const char* string, const uint16_t len) {
 	int ntabs =  0;
 	for (int i = 0; i < len; i++) {
 		if (string[i] == '\t') {
@@ -17,7 +18,7 @@ int count_tabs(const char* string, const unsigned int len) {
 	return ntabs;
 }
 
-void replace_newline(char* string, const unsigned int len) {
+void replace_newline(char* string, const uint16_t len) {
 	for (int i = 0; i <= len; i++) {
 		if (string[i] == '\n') {
 			string[i] = ' ';
@@ -34,6 +35,12 @@ int main() {
 	if (data == NULL || buffer == NULL || copy == NULL) {
 		exit(EXIT_FAILURE);
 	}
+	if (fgets(buffer, LINESIZE, data) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+
+	const unsigned int TAB_COUNT = count_tabs(buffer); // count tabs in header
+	fseek(data, 0, SEEK_SET); // reset file pointer to beginning of file
 	
 	while (fgets(buffer, LINESIZE, data)) {
 		if (last_line_ok) { // last line was ok
