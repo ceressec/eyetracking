@@ -4,9 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LINESIZE 3000
-#define true 1
-#define false 0
+#include "../headers/encoding.h"
 
 uint16_t count_tabs(const char* string, const uint16_t len) {
 	int ntabs =  0;
@@ -26,26 +24,12 @@ void replace_newline(char* string, const uint16_t len) {
 	}
 }
 
-int main() {
-	FILE* data = fopen("data/data.tsv", "r");
-	char* buffer = malloc(sizeof(char)* LINESIZE);
-	char* copy = malloc(sizeof(char)* LINESIZE);
-	int last_line_ok = true;
-
-	if (data == NULL || buffer == NULL || copy == NULL) {
-		exit(EXIT_FAILURE);
-	}
-	if (fgets(buffer, LINESIZE, data) == NULL) {
-		exit(EXIT_FAILURE);
-	}
-
-	const unsigned int TAB_COUNT = count_tabs(buffer); // count tabs in header
-	fseek(data, 0, SEEK_SET); // reset file pointer to beginning of file
-	
+void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
+	bool last_line_ok = true;
 	while (fgets(buffer, LINESIZE, data)) {
 		if (last_line_ok) { // last line was ok
 			unsigned int curr_len = strlen(buffer);
-			int tab_count = count_tabs(buffer, curr_len);
+			uint16_t tab_count = count_tabs(buffer, curr_len);
 			if (tab_count < TAB_COUNT) { // current line is not ok
 				strcpy(copy, buffer);
 				copy[curr_len -2] = ' '; // /!\ -2 -1 is \0 and -2 is \n 
@@ -61,6 +45,25 @@ int main() {
 			printf("%s", copy);
 		}
 	};
+}
+
+
+int main(const int argc, const char** argv) {
+	FILE* data = fopen("data/data.tsv", "r");
+	char* buffer = malloc(sizeof(char)* LINESIZE);
+	char* copy = malloc(sizeof(char)* LINESIZE);
+
+	if (data == NULL || buffer == NULL || copy == NULL) {
+		exit(EXIT_FAILURE);
+	}
+	if (fgets(buffer, LINESIZE, data) == NULL) {
+		exit(EXIT_FAILURE);
+	}
+
+	const uint16_t TAB_COUNT = count_tabs(buffer, strlen(buffer)); // count tabs in header
+	fseek(data, 0, SEEK_SET); // reset file pointer to beginning of file
+	clean(data, TAB_COUNT, buffer, copy); // stream through file and arange it on the fly
+	
 
 	fclose(data);
 	free(buffer);
