@@ -49,7 +49,7 @@ void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
 
 
 int main(const int argc, const char** argv) {
-	FILE* data = fopen("data/data.tsv", "r");
+	FILE* data = fopen(argv[1], "r");
 	char* buffer = malloc(sizeof(char)* LINESIZE);
 	char* copy = malloc(sizeof(char)* LINESIZE);
 
