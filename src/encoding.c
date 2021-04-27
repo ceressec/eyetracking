@@ -3,8 +3,15 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <encoding.h>
 
-#include "../headers/encoding.h"
+bool strcontains(const char* string, const char*substr) {
+	if (strstr(string, substr) != NULL) {
+		return true;
+	}
+	return false;
+}
 
 uint16_t count_tabs(const char* string, const uint16_t len) {
 	int ntabs =  0;
@@ -27,6 +34,7 @@ void replace_newline(char* string, const uint16_t len) {
 void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
 	bool last_line_ok = true;
 	while (fgets(buffer, LINESIZE, data)) {
+		assert(strlen(buffer) < LINESIZE);
 		if (last_line_ok) { // last line was ok
 			unsigned int curr_len = strlen(buffer);
 			uint16_t tab_count = count_tabs(buffer, curr_len);
@@ -40,6 +48,7 @@ void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
 		} else { // last line was broken
 			last_line_ok = true; // switch back to non broken mode
 			strcat(copy, buffer); // concat strings
+			assert(strlen(copy) < LINESIZE);
 			int len = strlen(copy);
 			replace_newline(copy, len);
 			printf("%s", copy);
@@ -47,13 +56,18 @@ void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
 	};
 }
 
-
 int main(const int argc, const char** argv) {
-	FILE* data = fopen("data/data.tsv", "r");
+	FILE* data = fopen(argv[1], "r");
+
+	if (data == NULL) {
+		printf("User error, should enter a correct path to an existing file\n");
+		exit(EXIT_FAILURE);
+	} 
+
 	char* buffer = malloc(sizeof(char)* LINESIZE);
 	char* copy = malloc(sizeof(char)* LINESIZE);
 
-	if (data == NULL || buffer == NULL || copy == NULL) {
+	if (buffer == NULL || copy == NULL) {
 		exit(EXIT_FAILURE);
 	}
 	if (fgets(buffer, LINESIZE, data) == NULL) {
@@ -64,7 +78,6 @@ int main(const int argc, const char** argv) {
 	fseek(data, 0, SEEK_SET); // reset file pointer to beginning of file
 	clean(data, TAB_COUNT, buffer, copy); // stream through file and arange it on the fly
 	
-
 	fclose(data);
 	free(buffer);
 	free(copy);
