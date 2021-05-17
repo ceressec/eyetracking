@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-
-#include "../include/encoding.h"
+#include <encoding.h>
 
 bool strcontains(const char* string, const char*substr) {
 	if (strstr(string, substr) != NULL) {
@@ -59,13 +58,16 @@ void clean(FILE* data, const uint16_t TAB_COUNT, char* buffer, char* copy) {
 
 int main(const int argc, const char** argv) {
 	FILE* data = fopen(argv[1], "r");
-	printf("argv[1] : %s", argv[1]);
-	fclose(data);
-	return 0;
+
+	if (data == NULL) {
+		printf("User error, should enter a correct path to an existing file\n");
+		exit(EXIT_FAILURE);
+	} 
+
 	char* buffer = malloc(sizeof(char)* LINESIZE);
 	char* copy = malloc(sizeof(char)* LINESIZE);
 
-	if (data == NULL || buffer == NULL || copy == NULL) {
+	if (buffer == NULL || copy == NULL) {
 		exit(EXIT_FAILURE);
 	}
 	if (fgets(buffer, LINESIZE, data) == NULL) {
